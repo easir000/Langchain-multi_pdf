@@ -11,7 +11,7 @@ This application takes in multiple PDF files, extracts the text, and generates c
 Clone the repository:
 
 ```bash
-git clone git@github.com:thissayantan/gpt-pdf.git
+git clone github.com/easir000/Langchain-multi_pdf.git
 cd gpt-pdf
 ```
 

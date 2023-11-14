@@ -14,7 +14,7 @@ from PyPDF2 import PdfReader
 from streamlit_extras.colored_header import colored_header
 from dotenv import load_dotenv
 
-VALID_CREDENTIALS = {"user1": "123456", "user2": "123456"}
+VALID_CREDENTIALS = {"chalkrai": "ab12cd34", "rapidai": "123456"}
 
 # load the environment variables
 load_dotenv()
@@ -72,6 +72,8 @@ def authenticate():
         st.subheader("Authentication")
         username = st.text_input("Username:")
         password = st.text_input("Password:", type="password")
+        
+
         
         if st.button("Login"):
             if VALID_CREDENTIALS.get(username) == password:
@@ -184,15 +186,20 @@ def get_current_vectorstore():
 
 
 def main():
+    llm_selection = None  # Initialize llm_selection at the beginning
+
     # Only show authentication if not authenticated
     if "authenticated" not in st.session_state or not st.session_state.authenticated:
         authenticate()
         return
-    
 
     # Sidebar contents
     with st.sidebar:
         st.subheader(":gear: Options")
+
+
+        
+    
 
         # Let the user choose the models
         llm_selection = st.selectbox(
@@ -256,6 +263,14 @@ def main():
             st.session_state.user = []
             st.session_state.generated = []
             st.session_state.cost = []
+
+
+
+        # Logout button
+        if st.button("Logout"):
+            st.session_state.authenticated = False
+            st.experimental_set_query_params(authenticated=False)
+
 
     st.header("Your Personal Assistant 💼")
 

@@ -13,7 +13,8 @@ from langchain.callbacks import get_openai_callback
 from PyPDF2 import PdfReader
 from streamlit_extras.colored_header import colored_header
 from dotenv import load_dotenv
-from langchain.vectorstores import FAISS
+
+VALID_CREDENTIALS = {"user1": "123456", "user2": "123456"}
 
 # load the environment variables
 load_dotenv()
@@ -25,7 +26,7 @@ os.makedirs(VECTORSTORE_DIR, exist_ok=True)
 
 
 # set the page title and icon
-st.set_page_config(page_title="LLM Powered Document Chat", page_icon=":brain:")
+st.set_page_config(page_title="Chalkrai Powered Document Chat", page_icon="🌍")
 
 
 def get_pdf_text(pdf_docs):
@@ -66,6 +67,22 @@ def load_vectorstore(filename):
     return vectorstore
 
 
+def authenticate():
+    if "authenticated" not in st.session_state or not st.session_state.authenticated:
+        st.subheader("Authentication")
+        username = st.text_input("Username:")
+        password = st.text_input("Password:", type="password")
+        
+        if st.button("Login"):
+            if VALID_CREDENTIALS.get(username) == password:
+                st.success("Authentication successful!")
+                st.session_state.authenticated = True
+
+                # Redirect to the dashboard page
+                st.experimental_set_query_params(authenticated=True)
+            else:
+                st.error("Authentication failed. Please try again.")
+            
 if "memory" not in st.session_state:
     st.session_state.memory = ConversationBufferMemory(
         memory_key="chat_history", return_messages=True
@@ -167,29 +184,35 @@ def get_current_vectorstore():
 
 
 def main():
+    # Only show authentication if not authenticated
+    if "authenticated" not in st.session_state or not st.session_state.authenticated:
+        authenticate()
+        return
+    
+
     # Sidebar contents
     with st.sidebar:
         st.subheader(":gear: Options")
 
         # Let the user choose the models
         llm_selection = st.selectbox(
-            ":robot_face: Choose a Large Language Model",
+            "🚀 Choose a Large Language Model",
             options=["OpenAI", "Falcon", "OpenAssistant"],
         )
         embeddings_selection = st.selectbox(
-            ":brain: Choose an Embeddings Model",
+            "🌞 Choose an Embeddings Model",
             options=["OpenAI", "HuggingFaceInstruct"],
         )
 
         # Let the user choose a vector store file, or create a new one
         vectorstore_files = ["Create New"] + os.listdir(VECTORSTORE_DIR)
         st.session_state.vectorstore_selection = st.selectbox(
-            ":file_folder: Choose a Vector Store File", options=vectorstore_files
+            "📥 Choose a Vector Store File", options=vectorstore_files
         )
 
         # Handle file upload
         pdf_docs = st.file_uploader(
-            "Upload your PDFs here and click on 'Process'",
+            "📑Upload your PDFs here and click on 'Process'",
             type=["pdf", "txt"],
             accept_multiple_files=True,
         )
@@ -234,7 +257,7 @@ def main():
             st.session_state.generated = []
             st.session_state.cost = []
 
-    st.header("Your Personal Assistant 💬")
+    st.header("Your Personal Assistant 💼")
 
     # Generate empty lists for generated and user.
     # Assistant Response
@@ -286,13 +309,13 @@ def main():
             for i in range(len(st.session_state["generated"])):
                 render_message(
                     "user",
-                    "https://i.ibb.co/cT0x3GK/user.png",
+                    "https://i.ibb.co/R6MK14P/pngtree-man.png",
                     st.session_state["user"][i],
                 )
 
                 render_message(
                     "AI",
-                    "https://i.ibb.co/2FmKVXm/ai.png",
+                    "https://i.ibb.co/k6TrSVX/chalkr-ai-2.jpg",
                     st.session_state["generated"][i],
                     st.session_state["cost"][i],
                 )

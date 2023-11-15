@@ -18,7 +18,7 @@ VALID_CREDENTIALS = {"chalkrai": "ab12cd34", "rapidai": "123456"}
 
 # load the environment variables
 load_dotenv()
-
+ 
 
 # Create the vectorstore directory if it doesn't exist
 VECTORSTORE_DIR = "vectorstore"
@@ -66,30 +66,54 @@ def load_vectorstore(filename):
         vectorstore = pickle.load(file)
     return vectorstore
 
-
 def authenticate():
     if "authenticated" not in st.session_state or not st.session_state.authenticated:
         st.subheader("Authentication")
-        username = st.text_input("Username:")
-        password = st.text_input("Password:", type="password")
-        
 
-        
-        if st.button("Login"):
-            if VALID_CREDENTIALS.get(username) == password:
-                st.success("Authentication successful!")
-                st.session_state.authenticated = True
+        # Check if the user wants to register
+        is_registering = st.checkbox("Register")
 
-                # Redirect to the dashboard page
-                st.experimental_set_query_params(authenticated=True)
-            else:
-                st.error("Authentication failed. Please try again.")
-            
+        if is_registering:
+            new_username = st.text_input("New Username:")
+            new_password = st.text_input("New Password:", type="password")
+            confirm_password = st.text_input("Confirm Password:", type="password")
+
+            if st.button("Register"):
+                # Check if passwords match
+                if new_password == confirm_password:
+                    # Check if username already exists
+                    if new_username not in st.session_state.users:
+                        # Update session_state.users with the new user
+                        st.session_state.users[new_username] = {"password": new_password}
+                        st.success("Registration successful! You can now log in.")
+                    else:
+                        st.error("Username already exists. Please choose a different username.")
+                else:
+                    st.error("Passwords do not match. Please try again.")
+        else:
+            # Log in section remains the same
+            username = st.text_input("Username:")
+            password = st.text_input("Password:", type="password")
+
+            if st.button("Login"):
+                user_data = st.session_state.users.get(username)
+                if user_data and user_data["password"] == password:
+                    st.success("Authentication successful!")
+                    st.session_state.authenticated = True
+                    st.experimental_set_query_params(authenticated=True)
+                else:
+                    st.error("Authentication failed. Please try again.")
+                    st.write("Debugging Info:")
+                    st.write("Entered Username:", username)
+                    st.write("Entered Password:", password)
+
 if "memory" not in st.session_state:
     st.session_state.memory = ConversationBufferMemory(
         memory_key="chat_history", return_messages=True
     )
 
+if "users" not in st.session_state:
+    st.session_state.users = {}
 
 def chain_setup(vectorstore, model_name="OpenAI"):
     template = """{question}
@@ -270,7 +294,6 @@ def main():
         if st.button("Logout"):
             st.session_state.authenticated = False
             st.experimental_set_query_params(authenticated=False)
-
 
     st.header("Your Personal Assistant 💼")
 
